@@ -1,0 +1,81 @@
+
+// Include Libraries
+#include "Arduino.h"
+#include "Wire.h"
+#include "SPI.h"
+#include "Adafruit_SSD1306.h"
+#include "Adafruit_GFX.h"
+
+
+// Pin Definitions
+#define IROBJAVOID_PIN_OUT	2
+#define OLED128X32_PIN_RST	3
+
+
+
+// Global variables and defines
+
+// object initialization
+#define SSD1306_LCDHEIGHT 32
+Adafruit_SSD1306 oLed128x32(OLED128X32_PIN_RST);
+
+
+// define vars for testing menu
+const int timeout = 10000;       //define timeout of 10 sec
+char menuOption = 0;
+long time0;
+
+// Setup the essentials for your circuit to work. It runs first every time your circuit is powered with electricity.
+void setup() 
+{
+    // Setup Serial which is useful for debugging
+    // Use the Serial Monitor to view printed messages
+    Serial.begin(9600);
+    while (!Serial) ; // wait for serial port to connect. Needed for native USB
+    Serial.println("start");
+    
+    pinMode(IROBJAVOID_PIN_OUT, INPUT);
+    oLed128x32.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 128x32)
+    oLed128x32.clearDisplay(); // Clear the buffer.
+    oLed128x32.display();
+    menuOption = menu();
+    
+}
+
+// Main logic of your circuit. It defines the interaction between the components you selected. After setup, it runs over and over again, in an eternal loop.
+void loop() 
+{
+    
+    
+    if(menuOption == '1') {
+    // IR Obstacle Avoidance Sensor - Test Code
+    //Read IR obstacle Sensor. irObjAvoidVar will be '1' if an Obstacle was detected
+    //Use the onboard trimmer to set the distance of alert
+    bool irObjAvoidVar = !digitalRead(IROBJAVOID_PIN_OUT);
+    Serial.print(F("ObjAvoid: ")); Serial.println(irObjAvoidVar);
+
+    }
+    else if(menuOption == '2') {
+    // Monochrome 128x32 I2C OLED graphic display - Test Code
+    oLed128x32.setTextSize(1);
+    oLed128x32.setTextColor(WHITE);
+    oLed128x32.setCursor(0, 10);
+    oLed128x32.clearDisplay();
+    oLed128x32.println("Circuito.io Rocks!");
+    oLed128x32.display();
+    delay(1);
+    oLed128x32.startscrollright(0x00, 0x0F);
+    delay(2000);
+    oLed128x32.stopscroll();
+    delay(1000);
+    oLed128x32.startscrollleft(0x00, 0x0F);
+    delay(2000);
+    oLed128x32.stopscroll();
+    }
+    
+    if (millis() - time0 > timeout)
+    {
+        menuOption = menu();
+    }
+    
+}
